@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alibaba 詳情頁 · 商家自助編輯</title>
+<style>
+:root{--brand:#ff6f1a;--ink:#0c2a5e;--line:#e3e8f0;--bg:#f5f7fb;--soft:#fafbfd}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"PingFang TC","Noto Sans TC",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--ink);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px}
+header h1{font-size:16px;margin:0;font-weight:700}
+header .hint{font-size:12px;opacity:.85;line-height:1.4}
+.wrap{display:flex;height:calc(100vh - 62px)}
+.left{width:46%;min-width:420px;border-right:1px solid var(--line);display:flex;flex-direction:column;background:#fff}
+.right{flex:1;background:#eef1f6;overflow:auto;position:relative}
+.form{flex:1;overflow:auto;padding:14px 16px}
+.sec{border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.sec-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--soft);cursor:pointer;user-select:none}
+.sec-hd h2{font-size:14px;margin:0;font-weight:700;flex:1}
+.sec-hd .toggle{display:flex;align-items:center;gap:5px;font-size:12px;color:#6b7a90}
+.sec-hd .toggle input{width:15px;height:15px;accent-color:var(--brand)}
+.sec-hd .caret{font-size:12px;color:#9aa7b8;transition:transform .15s}
+.sec.collapsed .caret{transform:rotate(-90deg)}
+.sec.collapsed .sec-bd{display:none}
+.sec.off{opacity:.5}
+.sec.off .sec-bd{pointer-events:none}
+.sec-bd{padding:12px 14px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;color:#54637a;margin-bottom:4px;font-weight:600}
+.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;color:#12233f;background:#fff}
+.field input:focus,.field textarea:focus{border-color:var(--brand)}
+.field textarea{resize:vertical;min-height:64px;line-height:1.5}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{border:1px dashed var(--line);border-radius:8px;padding:8px;background:var(--soft);position:relative}
+.row .row-grid{display:flex;gap:8px;flex-wrap:wrap}
+.row .cell{flex:1;min-width:120px}
+.row .cell.wide{flex-basis:100%}
+.row .cell label{font-size:11px;color:#6b7a90;margin-bottom:3px;display:block}
+.row .del{position:absolute;top:6px;right:6px;border:0;background:#f0d6d6;color:#b23;border-radius:6px;width:22px;height:22px;font-size:14px;line-height:1;cursor:pointer;padding:0}
+.add{margin-top:8px;border:1px dashed var(--brand);background:#fff5ee;color:var(--brand);border-radius:7px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;width:100%}
+.toolbar{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--soft)}
+button.act{border:0;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-ok{background:#0c9d58;color:#fff}
+.btn-2{background:#eef1f6;color:var(--ink)}
+.msg{font-size:12px;margin-left:auto}
+.msg.ok{color:#0c9d58}.msg.err{color:#d33}
+.brandpick{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.brandpick .lb{font-size:12px;color:#54637a;font-weight:600}
+.brandpick input[type=color]{width:30px;height:26px;border:1px solid var(--line);border-radius:6px;padding:0;background:#fff;cursor:pointer}
+.brandpick input[type=text]{width:82px;border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-size:12.5px;font-family:inherit;text-transform:uppercase;color:#12233f;outline:none}
+.brandpick input[type=text]:focus{border-color:var(--brand)}
+.brandpick .sw{display:flex;gap:4px}
+.brandpick .sw span{width:18px;height:18px;border-radius:4px;cursor:pointer;border:1px solid rgba(0,0,0,.12)}
+.previewbar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:8px 14px;display:flex;gap:14px;align-items:center;font-size:12px;color:#6b7a90}
+.previewbar b{color:var(--ink)}
+.frameholder{padding:20px;display:flex;justify-content:center}
+iframe{width:790px;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 24px rgba(12,42,94,.08)}
+.note{font-size:11.5px;color:#9aa7b8;margin:2px 0 0}
+.tpllib{flex:1;overflow:auto;padding:14px 16px}
+.tpllib .lead{font-size:12.5px;color:#6b7a90;margin:0 0 12px;line-height:1.5}
+.tplgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tplcard{border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;background:#fff;transition:border-color .12s,box-shadow .12s}
+.tplcard:hover{border-color:var(--brand)}
+.tplcard.on{border-color:var(--brand);box-shadow:0 0 0 2px rgba(255,111,26,.25)}
+.tplcard .preview{position:relative;width:100%;overflow:hidden;background:#fff;border-bottom:1px solid var(--line)}
+.tplcard .preview iframe{border:0;transform-origin:top left;pointer-events:none;background:#fff;display:block}
+.tplcard .preview .fade{position:absolute;left:0;right:0;bottom:0;height:36px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff);pointer-events:none;display:none}
+.tplcard .preview.clipped .fade{display:block}
+.tplcard .preview .ldg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9aa7b8;font-size:12px}
+.tplcard .cap{padding:7px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.tplcard .dot{width:11px;height:11px;border-radius:3px;border:1px solid rgba(0,0,0,.12);flex:none}
+.tplcard .cap .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tplcard .editbtn{border:1px solid var(--brand);background:#fff5ee;color:var(--brand);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;display:none;flex:none}
+.tplcard.on .editbtn{display:inline-block}
+.tpledit{flex:1;overflow:auto;padding:14px 16px}
+.tpledit .lead{font-size:12.5px;color:#6b7a90;margin:0 0 12px;line-height:1.5}
+.editbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.editback{border:1px solid var(--line);background:#eef1f6;color:var(--ink);border-radius:7px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+.editname{font-size:13px;font-weight:700;color:var(--ink)}
+.tpledit select:focus{border-color:var(--brand);outline:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Alibaba 詳情頁 · 商家自助編輯</h1>
+  <span class="hint">從「官方模板庫」直接套用 45 款官方版型，逐格改文字、換圖片網址、選色後即可複製整頁 HTML。</span>
+</header>
+<div class="wrap">
+  <div class="left">
+    <div class="tpllib" id="tpllib">
+      <p class="lead">點一個版型即可在右邊即時預覽（原汁原味還原官方模板）。挑好後按卡片上的「編輯這個模板」，就能逐格改文字、換圖片網址、調顏色。</p>
+      <div class="tplgrid" id="tplgrid"></div>
+    </div>
+    <div class="tpledit" id="tpledit" style="display:none">
+      <div class="editbar">
+        <button id="backLib" class="editback">← 換一個模板</button>
+        <span class="editname" id="editName"></span>
+      </div>
+      <p class="lead">每個區塊對應官方模板的一個模組。展開區塊即可改文字、貼新的圖片網址（貼上就換圖）、調顏色。改完直接看右邊預覽，或用下方「複製可貼阿里的 HTML」。</p>
+      <div id="editform"></div>
+    </div>
+    <div class="toolbar">
+      <div class="brandpick" title="選擇整頁的主色（標題框、按鈕等）">
+        <span class="lb">主色</span>
+        <input type="color" id="brandColor">
+        <input type="text" id="brandHex" maxlength="7" placeholder="#800020">
+        <span class="sw" id="brandSwatches"></span>
+      </div>
+      <button class="act btn-ok" id="copy">複製可貼阿里的 HTML</button>
+      <button class="act btn-2" id="dl">下載 HTML</button>
+      <button class="act btn-2" id="reset">還原範例</button>
+      <span class="msg" id="msg"></span>
+    </div>
+  </div>
+  <div class="right">
+    <div class="previewbar" id="pbar"></div>
+    <div class="frameholder"><iframe id="frame" height="1400"></iframe></div>
+  </div>
+</div>
+
+<script src="scripts/vue.global.prod.js"></script>
+<script src="chaojimeidian-templates/data.js"></script>
+<script src="scripts/mainimg-placeholder.js"></script>
+<script src="scripts/logo-placeholder.js"></script>
+<script src="scripts/cjmd-renderer.js?rv=va-top2"></script>
+<script src="scripts/cjmd-editor.js"></script>
+<script src="scripts/detail-engine-chaojimeidian.js"></script>
+<script src="wb-samples.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---- 表單結構描述（中文標籤 → 對應引擎欄位）---- */
+  // module: 對應 10 大模組 id（可勾顯示/隱藏）；null = 一律顯示、無勾選
+  // repeat: 可增刪的列；item 為單列欄位；item 用 key:"__str" 代表純網址字串陣列
+  var SCHEMA = [
+    { key:"spec", title:"規格參數", module:"spec", repeat:{ path:"product.attributes", addText:"＋ 新增一列規格",
+      hint:"填產品的關鍵規格，一列一項。例如：容量、材質、顏色、MOQ、型號。",
+      item:[
+        { key:"attrName", label:"參數名", type:"text", ph:"例：Material（材質）" },
+        { key:"attrValue", label:"參數值", type:"text", ph:"例：填寫該項規格的內容" }
+      ]}},
+    { key:"intro", title:"產品大圖（PRODUCT INTRODUCTION）", module:"intro", repeat:{ path:"product.images", addText:"＋ 新增一張圖片網址",
+      hint:"產品情境／細節大圖，每張佔滿整個寬度。建議 750px 以上寬、依序排列。貼圖片網址（http 開頭）。",
+      item:[
+        { key:"__str", label:"圖片網址", type:"text", wide:true, ph:"https://…（貼上產品圖片的網址）" }
+      ]}},
+    { key:"recommend", title:"關聯推薦（PRODUCT DISPLAY）", module:"recommend", repeat:{ path:"product.recommends", addText:"＋ 新增一個推薦",
+      hint:"想順便推薦的其他商品，會排成小卡片。建議 3～6 個。",
+      item:[
+        { key:"image", label:"圖片網址", type:"text", wide:true, ph:"https://…（推薦商品的圖片網址）" },
+        { key:"title", label:"標題", type:"text", wide:true, ph:"例：推薦商品的名稱" },
+        { key:"price", label:"價格（如 US $3.95）", type:"text", ph:"例：US $0.00 或 US $0.0~0.0" },
+        { key:"url", label:"連結網址", type:"text", ph:"https://…（點圖後前往的商品連結）" }
+      ]}},
+    { key:"about", title:"公司簡介（COMPANY PROFILE）", module:"about",
+      fields:[
+        { type:"text", path:"options.about.companyName", label:"公司名稱", ph:"例：ABC COMPANY CO., LTD." },
+        { type:"textarea", path:"options.about.text", label:"公司介紹文字", ph:"用 2～4 句介紹公司：成立年份、主營產品、廠房規模、員工數、年產能。例：Established in 20XX, we are a leading manufacturer of…", hint:"建議用英文，涵蓋『成立時間＋主營產品＋規模／產能』最能取信買家。" }
+      ],
+      repeat:{ path:"options.about.bgImage", addText:"＋ 新增一張背景圖網址",
+        hint:"第一張放左側大框（建議工廠或辦公室照），第二張以後會整頁滿版排在文字下方。",
+        item:[
+          { key:"__str", label:"背景圖片網址", type:"text", wide:true, ph:"https://…（第一張＝左側大框；其餘＝下方滿版圖）" }
+        ]}},
+    { key:"factory", title:"工廠與車間", module:"factory", repeat:{ path:"options.factoryImages", addText:"＋ 新增一張工廠圖網址",
+      hint:"展示生產實力，共 5 張最佳（上排 2 張、下排 3 張）。放產線、車間、倉庫、品檢等實拍照。",
+      item:[
+        { key:"__str", label:"工廠圖片網址", type:"text", wide:true, ph:"https://…（產線／車間／倉庫實拍照）" }
+      ]}},
+    { key:"certificate", title:"證書（CERTIFICATE）", module:"certificate",
+      fields:[
+        { type:"text", path:"options.certBase", label:"底座裝飾圖網址（可留空）", ph:"https://…（版面裝飾用，沒有可留空）" },
+        { type:"text", path:"options.certCup", label:"杯子裝飾圖網址（可留空）", ph:"https://…（版面裝飾用，沒有可留空）" }
+      ],
+      repeat:{ path:"options.certificates", addText:"＋ 新增一張證書網址",
+        hint:"公司或產品的認證證書掃描圖，例如 BSCI、FDA、LFGB、ISO 等。",
+        item:[
+          { key:"__str", label:"證書圖片網址", type:"text", wide:true, ph:"https://…（證書掃描圖，如 FDA／ISO）" }
+        ]}},
+    { key:"advantages", title:"優勢四格（WHY CHOOSE US）", module:"advantages", repeat:{ path:"options.advantages", addText:"＋ 新增一個優勢",
+      hint:"為什麼選我們，建議剛好 4 個。每個一個標題＋一句說明＋小圖示。",
+      item:[
+        { key:"title", label:"標題（如 OEM SERVICE）", type:"text", ph:"例：OEM SERVICE / QUALITY / LOGISTICS" },
+        { key:"desc", label:"說明", type:"text", wide:true, ph:"例：OEM service, strong capacity and competitive price" },
+        { key:"icon", label:"圖示網址", type:"text", wide:true, ph:"https://…（小圖示，建議透明底 PNG）" }
+      ]}},
+    { key:"packing", title:"包裝與物流（PACKING & LOGISTICS）", module:"packing",
+      repeat:{ path:"options.packing.big", addText:"＋ 新增一張主圖網址",
+        hint:"上方兩張大圖，通常一張空運（Air）、一張海運（Sea）。",
+        item:[
+          { key:"__str", label:"物流主圖網址（Air/Sea 各一）", type:"text", wide:true, ph:"https://…（空運／海運示意大圖）" }
+        ]},
+      repeat2:{ path:"options.packing.small", addText:"＋ 新增一張小圖網址",
+        hint:"下方一排包裝細節小圖，例如內盒、外箱、防護、棧板等。",
+        item:[
+          { key:"__str", label:"包裝小圖網址", type:"text", wide:true, ph:"https://…（內盒／外箱／防護等細節圖）" }
+        ]}},
+    { key:"faq", title:"常見問題（FAQ）", module:"faq", repeat:{ path:"options.faqs", addText:"＋ 新增一組問答",
+      hint:"買家最常問的問題，建議 3～5 組。例如 MOQ、打樣、OEM、交期、主要市場。",
+      item:[
+        { key:"q", label:"問題", type:"text", wide:true, ph:"例：What is your minimum order quantity?" },
+        { key:"a", label:"回答", type:"textarea", wide:true, ph:"例：The MOQ for customized products is 1000 pieces." }
+      ]}},
+    { key:"contact", title:"聯絡我們（CONTACT US）", module:"contact",
+      fields:[
+        { type:"text", path:"options.contact.companyName", label:"公司名稱", ph:"例：ABC COMPANY CO., LTD." },
+        { type:"text", path:"options.contact.bg", label:"背景圖片網址", ph:"https://…（聯絡區塊的背景圖，可留空）" }
+      ],
+      repeat:{ path:"options.contact.lines", addText:"＋ 新增一行聯絡資訊",
+        hint:"一行一項聯絡方式，例如 WeChat、Email、Website、公司地址。",
+        item:[
+          { key:"text", label:"聯絡資訊文字", type:"text", wide:true, ph:"例：E-mail: sales@yourcompany.com" },
+          { key:"icon", label:"圖示網址", type:"text", ph:"https://…（小圖示，可留空）" }
+        ]}}
+  ];
+
+  var ALL = DetailEngine.ALL_MODULES;
+  var state = { product:{}, options:{} };
+  var moduleOn = {};   // module id -> bool
+  var MODE = "lib";   // 只保留官方模板庫（"lib"）；自訂編輯已移除
+  var libTpl = null;   // 目前選中的官方模板 versionId
+  var libOrigColor = null; // 目前模板的原始主題色
+  var libResolved = null;  // 目前模板解析後、可編輯的模組清單
+  var libView = "gallery"; // "gallery" = 挑模板 ; "edit" = 編輯所選模板
+
+  function $(s){ return document.querySelector(s); }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  /* ---- 主色（品牌色）---- */
+  var PRESET_COLORS = ["#800020","#0c2a5e","#ff6f1a","#1a7f4b","#111111","#b8860b","#5b2a86","#c0392b"];
+  // 把各種色值統一成 #RRGGBB（給 <input type=color> 用）
+  function toHex(v){
+    if(!v) return "#800020";
+    v = String(v).trim();
+    var m = v.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if(m){
+      return "#"+[m[1],m[2],m[3]].map(function(n){ return ("0"+parseInt(n,10).toString(16)).slice(-2); }).join("");
+    }
+    if(/^#?[0-9a-f]{6}$/i.test(v)) return (v[0]==="#"?v:"#"+v).toLowerCase();
+    if(/^#?[0-9a-f]{3}$/i.test(v)){ var h=v.replace("#",""); return "#"+h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; }
+    return "#800020";
+  }
+  function setBrand(hex){
+    hex = toHex(hex);
+    state.__brand = hex;
+    var ci=$("#brandColor"), hx=$("#brandHex");
+    if(ci) ci.value = hex;
+    if(hx && hx.value.toLowerCase()!==hex) hx.value = hex.toUpperCase();
+  }
+  function initBrandUI(){
+    var sw=$("#brandSwatches"); sw.innerHTML="";
+    PRESET_COLORS.forEach(function(c){
+      var s=document.createElement("span"); s.style.background=c; s.title=c;
+      s.onclick=function(){ setBrand(c); preview(); };
+      sw.appendChild(s);
+    });
+    $("#brandColor").oninput=function(){ setBrand(this.value); preview(); };
+    $("#brandHex").oninput=function(){
+      var v=this.value.trim();
+      if(/^#?[0-9a-f]{6}$/i.test(v)){ setBrand(v); preview(); }
+    };
+  }
+
+  /* ---- nested path helpers ---- */
+  function getPath(root, path){
+    return path.split(".").slice(1).reduce(function(o,k){ return (o==null)?undefined:o[k]; }, path.split(".")[0]==="product"?root.product:root.options);
+  }
+  function setPath(root, path, val){
+    var parts = path.split(".");
+    var base = parts[0]==="product" ? root.product : root.options;
+    var keys = parts.slice(1);
+    var o = base;
+    for (var i=0;i<keys.length-1;i++){ if(o[keys[i]]==null) o[keys[i]]={}; o=o[keys[i]]; }
+    o[keys[keys.length-1]] = val;
+  }
+  function getArr(root, path){
+    var v = getPath(root, path);
+    return Array.isArray(v)? v : [];
+  }
+
+  /* ---- 初始化 state（從範例）---- */
+  function loadSample(){
+    state.product = clone(window.__SAMPLE_PRODUCT__ || {});
+    state.options = clone(window.__SAMPLE_OPTIONS__ || {});
+    // 背景圖統一成陣列，讓「新增一張」的增刪列可用（相容舊的字串寫法）
+    if(state.options.about){
+      var bg = state.options.about.bgImage;
+      state.options.about.bgImage = bg==null ? [] : (Array.isArray(bg)? bg : [bg]);
+    }
+    // 主色：預設沿用範例，但商家可用工具列的選色器自行更換
+    setBrand(state.options.brand || "#800020");
+    delete state.options.disable;
+    ALL.forEach(function(m){ moduleOn[m]=true; });
+    // 若範例本身有 disable，反映之
+    (window.__SAMPLE_OPTIONS__ && window.__SAMPLE_OPTIONS__.disable || []).forEach(function(m){ moduleOn[m]=false; });
+  }
+
+  /* ---- 渲染表單 ---- */
+  function fieldInput(f){
+    var wrap = document.createElement("div"); wrap.className="field";
+    var lab = document.createElement("label"); lab.textContent=f.label; wrap.appendChild(lab);
+    var el = document.createElement(f.type==="textarea"?"textarea":"input");
+    if(f.ph) el.placeholder = f.ph;
+    var cur = getPath(state, f.path);
+    el.value = (cur==null?"":cur);
+    el.oninput = function(){ setPath(state, f.path, el.value); preview(); };
+    wrap.appendChild(el);
+    if(f.hint){ var h=document.createElement("div"); h.className="note"; h.textContent=f.hint; wrap.appendChild(h); }
+    return wrap;
+  }
+
+  function repeatBlock(rep){
+    var box = document.createElement("div");
+    if(rep.hint){ var h=document.createElement("div"); h.className="note"; h.textContent=rep.hint; box.appendChild(h); }
+    var rows = document.createElement("div"); rows.className="rows";
+    var arr = getArr(state, rep.path);
+    arr.forEach(function(item, idx){
+      rows.appendChild(rowEl(rep, idx));
+    });
+    box.appendChild(rows);
+    var add = document.createElement("button"); add.className="add"; add.textContent=rep.addText||"＋ 新增一列";
+    add.onclick = function(){
+      var arr = getArr(state, rep.path);
+      var isStr = rep.item.length===1 && rep.item[0].key==="__str";
+      arr.push(isStr ? "" : {});
+      setPath(state, rep.path, arr);
+      render();
+    };
+    box.appendChild(add);
+    return box;
+  }
+
+  function rowEl(rep, idx){
+    var row = document.createElement("div"); row.className="row";
+    var grid = document.createElement("div"); grid.className="row-grid";
+    var arr = getArr(state, rep.path);
+    var isStr = rep.item.length===1 && rep.item[0].key==="__str";
+    rep.item.forEach(function(cf){
+      var cell = document.createElement("div"); cell.className="cell"+(cf.wide?" wide":"");
+      var lab = document.createElement("label"); lab.textContent=cf.label; cell.appendChild(lab);
+      var el = document.createElement(cf.type==="textarea"?"textarea":"input");
+      if(cf.ph) el.placeholder = cf.ph;
+      var v = isStr ? arr[idx] : (arr[idx]&&arr[idx][cf.key]);
+      el.value = (v==null?"":v);
+      el.oninput = function(){
+        var arr = getArr(state, rep.path);
+        if(isStr){ arr[idx]=el.value; }
+        else { if(arr[idx]==null)arr[idx]={}; arr[idx][cf.key]=el.value; }
+        setPath(state, rep.path, arr);
+        preview();
+      };
+      cell.appendChild(el); grid.appendChild(cell);
+    });
+    row.appendChild(grid);
+    var del = document.createElement("button"); del.className="del"; del.textContent="×"; del.title="刪除這一列";
+    del.onclick = function(){
+      var arr = getArr(state, rep.path); arr.splice(idx,1); setPath(state, rep.path, arr); render();
+    };
+    row.appendChild(del);
+    return row;
+  }
+
+  function buildForm(){
+    var form = $("#form"); form.innerHTML="";
+    SCHEMA.forEach(function(sec){
+      var box = document.createElement("div"); box.className="sec";
+      if(sec.module && !moduleOn[sec.module]) box.classList.add("off");
+
+      var hd = document.createElement("div"); hd.className="sec-hd";
+      var caret = document.createElement("span"); caret.className="caret"; caret.textContent="▾";
+      var h2 = document.createElement("h2"); h2.textContent=sec.title;
+      hd.appendChild(caret); hd.appendChild(h2);
+
+      if(sec.module){
+        var tg = document.createElement("label"); tg.className="toggle";
+        var cb = document.createElement("input"); cb.type="checkbox"; cb.checked=!!moduleOn[sec.module];
+        cb.onclick = function(e){ e.stopPropagation(); moduleOn[sec.module]=cb.checked; render(); };
+        tg.appendChild(cb); tg.appendChild(document.createTextNode("顯示"));
+        tg.onclick=function(e){ e.stopPropagation(); };
+        hd.appendChild(tg);
+      }
+      box.appendChild(hd);
+
+      var bd = document.createElement("div"); bd.className="sec-bd";
+      (sec.fields||[]).forEach(function(f){ bd.appendChild(fieldInput(f)); });
+      if(sec.repeat) bd.appendChild(repeatBlock(sec.repeat));
+      if(sec.repeat2){
+        var hr=document.createElement("div"); hr.className="note"; hr.textContent="— 下方為包裝小圖 —"; bd.appendChild(hr);
+        bd.appendChild(repeatBlock(sec.repeat2));
+      }
+      box.appendChild(bd);
+
+      hd.onclick=function(){ box.classList.toggle("collapsed"); };
+      form.appendChild(box);
+    });
+  }
+
+  /* ---- 產生預覽 ---- */
+  function buildOptions(){
+    var o = clone(state.options);
+    o.brand = state.__brand;                       // 品牌色鎖定
+    o.disable = ALL.filter(function(m){ return !moduleOn[m]; });
+    return o;
+  }
+  var _pvTimer=null;
+  function preview(){
+    // 純打字時只更新右側預覽，不重建表單（避免游標跳掉）；輕度防抖
+    if(_pvTimer) clearTimeout(_pvTimer);
+    _pvTimer = setTimeout(function(){ MODE==="lib" ? doLibPreview() : doPreview(); }, 120);
+  }
+  function doPreview(){
+    var msg=$("#msg"); msg.className="msg"; msg.textContent="";
+    var product = clone(state.product);
+    var options = buildOptions();
+    var full, body;
+    try {
+      full = DetailEngine.renderDetail(product, options);
+      body = DetailEngine.renderBody(product, options);
+    } catch(e){ msg.className="msg err"; msg.textContent="產生失敗："+e.message; return; }
+    window.__BODY__ = body;
+    // 記住重新載入前的捲動位置（iframe 內部 + 右側外層），載入後還原，
+    // 避免改一個字就跳回最上面、還要重新滑回原處
+    var frame = $("#frame");
+    var right = document.querySelector(".right");
+    var prevInner = 0, prevOuter = right ? right.scrollTop : 0;
+    try { prevInner = frame.contentWindow ? frame.contentWindow.scrollY : 0; } catch(e){}
+    frame.onload = function(){
+      try { if(prevInner) frame.contentWindow.scrollTo(0, prevInner); } catch(e){}
+      if(right && prevOuter) right.scrollTop = prevOuter;
+    };
+    frame.srcdoc = full;
+    var specs = DetailEngine.specsFromAttributes(product).length;
+    var imgs = DetailEngine.imagesFromProduct(product, DetailEngine.MAX_IMAGES).length;
+    var mods = ALL.filter(function(m){ return moduleOn[m]; }).length;
+    $("#pbar").innerHTML="<span>模組 <b>"+mods+"</b> 個</span><span>規格 <b>"+specs+"</b> 列</span><span>主圖 <b>"+imgs+"</b> 張</span><span>寬 <b>750px</b>（阿里後台標準）</span>";
+  }
+  function render(){
+    // 結構改變（增刪列、切換模組、還原）才重建整個表單
+    buildForm();
+    doPreview();
+  }
+
+  /* ---- 官方模板庫 ---- */
+  function buildLibGallery(){
+    var grid = $("#tplgrid"); if(!grid || !window.CJMD) return;
+    grid.innerHTML="";
+    var NATIVE_W = 750;        // 模板原生寬度
+    var MAX_CARD_H = 360;      // 3 欄縮圖最高高度（過長版型只露頂部並顯示漸層）
+    CJMD.list().forEach(function(t){
+      var card=document.createElement("div"); card.className="tplcard"; card.setAttribute("data-vid", t.versionId);
+
+      // 直式即時預覽：整頁按卡片寬度等比縮放，完整由上到下呈現真實樣式
+      var pv=document.createElement("div"); pv.className="preview";
+      var ldg=document.createElement("div"); ldg.className="ldg"; ldg.textContent="載入預覽…"; pv.appendChild(ldg);
+      var frame=document.createElement("iframe");
+      frame.setAttribute("scrolling","no"); frame.setAttribute("tabindex","-1"); frame.setAttribute("aria-hidden","true");
+      try {
+        var resolved=CJMD.resolveTemplate(t.versionId);
+        frame.srcdoc = CJMD.renderResolvedStatic(resolved,{}).full;
+      } catch(e){ frame.srcdoc = "<!doctype html><div style='padding:20px;color:#b00;font:13px sans-serif'>預覽失敗</div>"; }
+      pv.appendChild(frame);
+      var fade=document.createElement("div"); fade.className="fade"; pv.appendChild(fade);
+
+      var cap=document.createElement("div"); cap.className="cap";
+      var dot=document.createElement("span"); dot.className="dot"; dot.style.background=CJMD.themeColorFromId(t.themeId)||"#ccc";
+      var nm=document.createElement("span"); nm.className="nm"; nm.textContent=t.name.replace("详情页-","");
+      var eb=document.createElement("button"); eb.className="editbtn"; eb.textContent="編輯這個模板 ✎";
+      eb.onclick=function(e){ e.stopPropagation(); selectLibTpl(t.versionId); openLibEditor(); };
+      cap.appendChild(dot); cap.appendChild(nm); cap.appendChild(eb);
+
+      card.appendChild(pv); card.appendChild(cap);
+      card.onclick=function(){ selectLibTpl(t.versionId); };
+      grid.appendChild(card);
+
+      // 依卡片實際寬度換算縮放比，讓 750px 版型剛好塞滿卡片寬
+      var scale = pv.clientWidth / NATIVE_W;
+      if(scale<=0) scale = 300 / NATIVE_W;
+      frame.style.width = NATIVE_W + "px";
+      frame.style.transform = "scale(" + scale + ")";
+
+      // iframe 載入後量測真實內容高度，把預覽框設成縮放後的完整頁高（過長才裁切）
+      function fit(){
+        var docH = 0;
+        try {
+          var d = frame.contentDocument;
+          if(d && d.body){
+            docH = Math.max(d.body.scrollHeight, d.documentElement ? d.documentElement.scrollHeight : 0);
+          }
+        } catch(err){}
+        if(!docH) docH = 1200; // 量測失敗的後備高度
+        frame.style.height = docH + "px";
+        var scaledH = Math.ceil(docH * scale);
+        var shown = Math.min(scaledH, MAX_CARD_H);
+        pv.style.height = shown + "px";
+        pv.classList.toggle("clipped", scaledH > MAX_CARD_H + 4);
+        if(ldg && ldg.parentNode) ldg.parentNode.removeChild(ldg);
+      }
+      frame.addEventListener("load", function(){ setTimeout(fit, 40); });
+      // srcdoc 有時在掛上前就已解析，補一次延遲量測
+      setTimeout(fit, 350);
+    });
+  }
+  function selectLibTpl(vid){
+    libTpl = vid;
+    var tpl = CJMD.getTemplate(vid);
+    libOrigColor = CJMD.themeColorFromId(tpl.themeId);
+    libResolved = CJMD.resolveTemplate(tpl);   // 解析成可編輯的模組清單
+    // 選新模板時，主色跟著回到該模板原色（商家可再自行改）
+    setBrand(libOrigColor || state.__brand);
+    Array.prototype.forEach.call($("#tplgrid").children, function(c){
+      c.classList.toggle("on", String(c.getAttribute("data-vid"))===String(vid));
+    });
+    doLibPreview();
+  }
+  function openLibEditor(){
+    if(libTpl==null || !libResolved) return;
+    libView = "edit";
+    $("#tpllib").style.display = "none";
+    $("#tpledit").style.display = "";
+    var tpl = CJMD.getTemplate(libTpl);
+    $("#editName").textContent = tpl ? tpl.name.replace("详情页-","") : "";
+    CJMDEditor.build($("#editform"), libResolved, function(){ doLibPreview(); });
+    doLibPreview();
+  }
+  function backToGallery(){
+    libView = "gallery";
+    $("#tpledit").style.display = "none";
+    $("#tpllib").style.display = "";
+  }
+  function doLibPreview(){
+    var msg=$("#msg"); msg.className="msg"; msg.textContent="";
+    if(libTpl==null || !libResolved){ $("#pbar").innerHTML="<span>請從左邊選一個官方模板</span>"; return; }
+    var tpl = CJMD.getTemplate(libTpl);
+    var opt = {};
+    // 只有當使用者把主色改離原色時才做整頁換色（在原始 formData 上非破壞性套色）
+    if(state.__brand && libOrigColor && state.__brand.toLowerCase()!==libOrigColor.toLowerCase()){
+      opt.brandColor = state.__brand; opt.origColor = libOrigColor;
+    }
+    var out;
+    try { out = CJMD.renderResolvedStatic(libResolved, opt); }
+    catch(e){ msg.className="msg err"; msg.textContent="模板渲染失敗："+e.message; return; }
+    window.__BODY__ = out.body;
+    window.__FULL__ = out.full;
+    var frame=$("#frame"); var right=document.querySelector(".right");
+    var prevInner=0, prevOuter=right?right.scrollTop:0;
+    try{ prevInner=frame.contentWindow?frame.contentWindow.scrollY:0; }catch(e){}
+    frame.onload=function(){ try{ if(prevInner) frame.contentWindow.scrollTo(0,prevInner); }catch(e){} if(right&&prevOuter) right.scrollTop=prevOuter; };
+    frame.srcdoc = out.full;
+    var mods = libResolved.length;
+    $("#pbar").innerHTML="<span>官方模板 <b>"+tpl.name.replace("详情页-","")+"</b></span><span>模組 <b>"+mods+"</b> 個</span><span>主色 <b>"+(state.__brand||"—")+"</b></span><span>寬 <b>750px</b></span>";
+  }
+
+  /* ---- 模式切換（只剩官方模板庫）---- */
+  function setMode(m){
+    MODE = "lib";
+    $("#reset").textContent = "清除選擇";
+    // 進模板庫一律先回到「挑模板」畫面
+    libView = "gallery";
+    $("#tpledit").style.display = "none";
+    $("#tpllib").style.display = "";
+    if(!$("#tplgrid").children.length) buildLibGallery();
+    doLibPreview();
+  }
+
+  $("#copy").onclick=function(){
+    if(MODE==="lib" && libTpl==null){ var m0=$("#msg"); m0.className="msg err"; m0.textContent="請先選一個官方模板"; return; }
+    if(MODE==="edit"){ if(!window.__BODY__) render(); }
+    else { if(!window.__BODY__) doLibPreview(); }
+    if(!window.__BODY__) return;
+    navigator.clipboard.writeText(window.__BODY__).then(function(){
+      var m=$("#msg"); m.className="msg ok"; m.textContent="已複製！貼到阿里後台『詳情描述 → 原始碼 <>』即可";
+    });
+  };
+  $("#dl").onclick=function(){
+    var full;
+    if(MODE==="lib"){ if(libTpl==null) return; full = window.__FULL__ || (libResolved ? CJMD.renderResolvedStatic(libResolved,{}).full : ""); }
+    else { full = DetailEngine.renderDetail(clone(state.product), buildOptions()); }
+    if(!full) return;
+    var b=new Blob([full],{type:"text/html"}); var a=document.createElement("a");
+    a.href=URL.createObjectURL(b); a.download="detail.html"; a.click();
+  };
+  $("#reset").onclick=function(){
+    if(MODE==="lib"){
+      libTpl=null; libOrigColor=null; libResolved=null;
+      backToGallery();
+      Array.prototype.forEach.call($("#tplgrid").children, function(c){ c.classList.remove("on"); });
+      $("#editform").innerHTML="";
+      var f=$("#frame"); f.srcdoc="";
+      $("#pbar").innerHTML="<span>請從左邊選一個官方模板</span>";
+      var m=$("#msg"); m.className="msg ok"; m.textContent="已清除選擇";
+      return;
+    }
+    loadSample(); render(); var m=$("#msg"); m.className="msg ok"; m.textContent="已還原成範例內容";
+  };
+  $("#backLib").onclick=function(){ backToGallery(); };
+
+  initBrandUI();
+  setBrand(state.__brand);
+  setMode("lib");
+})();
+</script>
+</body>
+</html>
